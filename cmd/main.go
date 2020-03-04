@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	fkc "github.com/fieldkit/app-protocol/fkdevice"
+	fkc "github.com/fieldkit/fkc"
 
 	pb "github.com/fieldkit/app-protocol"
 	atlaspb "github.com/fieldkit/atlas-protocol"

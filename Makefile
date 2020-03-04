@@ -9,3 +9,6 @@ all: $(BUILD)/fkc
 
 $(BUILD)/fkc: cmd/*.go *.go
 	go build -o $(BUILD)/fkc cmd/*.go
+
+clean:
+	rm -rf $(BUILD)
