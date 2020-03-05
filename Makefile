@@ -1,14 +1,17 @@
 GOARCH ?= amd64
 GOOS ?= linux
 GO ?= env GOOS=$(GOOS) GOARCH=$(GOARCH) go
-UNAME := $(shell uname)
 BUILD ?= $(abspath build)
-BUILDARCH ?= $(BUILD)/$(GOOS)-$(GOARCH)
+BINARY ?= fkc
 
-all: $(BUILD)/fkc
+all: $(BUILD)/$(BINARY)
 
-$(BUILD)/fkc: cmd/*.go *.go
-	go build -o $(BUILD)/fkc cmd/*.go
+ci: all
+
+$(BUILD)/$(BINARY): cmd/*.go *.go
+	go build -o $(BUILD)/$(BINARY) cmd/*.go
 
 clean:
 	rm -rf $(BUILD)
+
+.PHONY: all clean
