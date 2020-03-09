@@ -28,9 +28,8 @@ type options struct {
 	StartRecording bool
 	StopRecording  bool
 
-	Schedule     string
-	WifiSsid     string
-	WifiPassword string
+	Schedule string
+	Wifi     string
 
 	LoraAppKey            string
 	LoraAppEui            string
@@ -76,8 +75,7 @@ func main() {
 	flag.IntVar(&o.LoraDownlinkCounter, "lora-downlink-counter", 0, "lora-downlink-counter")
 	flag.StringVar(&o.Schedule, "schedule", "", "schedule")
 
-	flag.StringVar(&o.WifiSsid, "wifi-ssid", "", "wifi ssid")
-	flag.StringVar(&o.WifiPassword, "wifi-password", "", "wifi password")
+	flag.StringVar(&o.Wifi, "wifi", "", "wifi networks: ssid,password,ssid,password")
 
 	flag.IntVar(&o.Module, "module", -1, "module")
 	flag.StringVar(&o.Atlas, "atlas", "", "atlas")
@@ -177,13 +175,8 @@ func main() {
 		}
 	}
 
-	if o.WifiSsid != "" && o.WifiPassword != "" {
-		networks := []*pb.NetworkInfo{
-			&pb.NetworkInfo{
-				Ssid:     o.WifiSsid,
-				Password: o.WifiPassword,
-			},
-		}
+	if o.Wifi != "" {
+		networks := buildNetworks(o.Wifi)
 		_, err := device.ConfigureWifiNetworks(networks)
 		if err != nil {
 			log.Fatalf("Error: %v", err)
@@ -284,6 +277,24 @@ func main() {
 			log.Printf("reply: %+v", reply)
 		}
 	}
+}
+
+func buildNetworks(wifi string) []*pb.NetworkInfo {
+	networks := make([]*pb.NetworkInfo, 0)
+	parts := strings.Split(wifi, ",")
+	if len(parts)%2 != 0 {
+		return networks
+	}
+
+	for i := 0; i < len(parts); {
+		networks = append(networks, &pb.NetworkInfo{
+			Ssid:     parts[i],
+			Password: parts[i+1],
+		})
+		i += 2
+	}
+
+	return networks
 }
 
 func atlasQuery(device *fkc.DeviceClient, module uint32, query *atlaspb.WireAtlasQuery) (reply *atlaspb.WireAtlasReply, err error) {
