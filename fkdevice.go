@@ -98,15 +98,43 @@ func (d *DeviceClient) ConfigureSchedule(readings, network, gps, lora uint32) (*
 			Modifying: true,
 			Readings: &pb.Schedule{
 				Interval: readings,
+				Intervals: []*pb.Interval{
+					&pb.Interval{
+						Start:    0,
+						End:      86400,
+						Interval: readings,
+					},
+				},
 			},
 			Network: &pb.Schedule{
 				Interval: network,
+				Intervals: []*pb.Interval{
+					&pb.Interval{
+						Start:    0,
+						End:      86400,
+						Interval: network,
+					},
+				},
 			},
 			Gps: &pb.Schedule{
 				Interval: gps,
+				Intervals: []*pb.Interval{
+					&pb.Interval{
+						Start:    0,
+						End:      86400,
+						Interval: gps,
+					},
+				},
 			},
 			Lora: &pb.Schedule{
 				Interval: lora,
+				Intervals: []*pb.Interval{
+					&pb.Interval{
+						Start:    0,
+						End:      86400,
+						Interval: lora,
+					},
+				},
 			},
 		},
 	}
