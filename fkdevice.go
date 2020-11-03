@@ -50,6 +50,17 @@ func (d *DeviceClient) ConfigureName(name string) (*pb.HttpReply, error) {
 	return reply, nil
 }
 
+func (d *DeviceClient) QueryScanModules() (*pb.HttpReply, error) {
+	query := &pb.HttpQuery{
+		Type: pb.QueryType_QUERY_SCAN_MODULES,
+	}
+	reply, err := d.queryDevice(query)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
 func (d *DeviceClient) QueryScanNetworks() (*pb.HttpReply, error) {
 	query := &pb.HttpQuery{
 		Type: pb.QueryType_QUERY_SCAN_NETWORKS,

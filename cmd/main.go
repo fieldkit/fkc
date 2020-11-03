@@ -23,6 +23,7 @@ type options struct {
 	Name      string
 	Save      string
 
+	ScanModules    bool
 	ScanNetworks   bool
 	GetReadings    bool
 	TakeReadings   bool
@@ -66,7 +67,8 @@ func main() {
 	flag.BoolVar(&o.TakeReadings, "take", false, "")
 	flag.BoolVar(&o.StartRecording, "start-recording", false, "")
 	flag.BoolVar(&o.StopRecording, "stop-recording", false, "")
-	flag.BoolVar(&o.ScanNetworks, "scan", false, "")
+	flag.BoolVar(&o.ScanNetworks, "scan-networks", false, "")
+	flag.BoolVar(&o.ScanModules, "scan-modules", false, "")
 	flag.StringVar(&o.Save, "save", "", "save")
 	flag.StringVar(&o.LoraAppKey, "lora-app-key", "", "lora-app-key")
 	flag.StringVar(&o.LoraAppEui, "lora-app-eui", "", "lora-app-eui")
@@ -144,6 +146,13 @@ func main() {
 
 	if o.StopRecording {
 		_, err := device.QueryStopRecording()
+		if err != nil {
+			log.Fatalf("Error: %v", err)
+		}
+	}
+
+	if o.ScanModules {
+		_, err := device.QueryScanModules()
 		if err != nil {
 			log.Fatalf("Error: %v", err)
 		}

@@ -42,6 +42,8 @@ github.com/fieldkit/app-protocol v0.0.0-20200731193405-370acf5d32d2 h1:FqMLIEctz
 github.com/fieldkit/app-protocol v0.0.0-20200731193405-370acf5d32d2/go.mod h1:KhKaDaH3pfvhmQeWhsuhg8e+LW+4mJDzBNZlNeRG75I=
 github.com/fieldkit/app-protocol v0.0.0-20200815000050-2e5ad3416568 h1:wm/NUyKvosoexns6NQoH5wQ4orppJH1QjDGCgoXUzq8=
 github.com/fieldkit/app-protocol v0.0.0-20200815000050-2e5ad3416568/go.mod h1:KhKaDaH3pfvhmQeWhsuhg8e+LW+4mJDzBNZlNeRG75I=
+github.com/fieldkit/app-protocol v0.0.0-20201103021818-0de094e1cbf6 h1:k5i3QMbS3pwkRB9sF/K4dX8wlC29mTNBYZXQ/kG/gnI=
+github.com/fieldkit/app-protocol v0.0.0-20201103021818-0de094e1cbf6/go.mod h1:gwbx2t3FRLipEU8NgPYE0A1GsKvRoAjlzzaV29JGHxM=
 github.com/fieldkit/atlas-protocol v0.0.0-20200205183448-29cdb99f6423/go.mod h1:Q/2y8dvxA64Ni4AHv96Tqn/qwtZZXU2LBXuJ9ZlqCxs=
 github.com/fieldkit/atlas-protocol v0.0.0-20200303170218-9db763fe5163 h1:yyXFdy0Nn507lyD1WH+ydfuErkrTGydRRPiqXmw2NHs=
 github.com/fieldkit/atlas-protocol v0.0.0-20200303170218-9db763fe5163/go.mod h1:Q/2y8dvxA64Ni4AHv96Tqn/qwtZZXU2LBXuJ9ZlqCxs=
@@ -70,6 +72,8 @@ github.com/golang/protobuf v1.4.1 h1:ZFgWrT+bLgsYPirOnRfKLYJLvssAegOj/hgyMFdJZe0
 github.com/golang/protobuf v1.4.1/go.mod h1:U8fpvMrcmy5pZrNK1lt4xCsGvpyWQ/VVv6QDs8UjoX8=
 github.com/golang/protobuf v1.4.2 h1:+Z5KGCizgyZCbGh1KZqA0fcLLkwbsjIzS4aV2v7wJX0=
 github.com/golang/protobuf v1.4.2/go.mod h1:oDoupMAO8OvCJWAcko0GGGIgR6R6ocIYbsSw735rRwI=
+github.com/golang/protobuf v1.4.3 h1:JjCZWpVbqXDqFVmTfYWEVTMIYrL/NPdPSCHPJ0T/raM=
+github.com/golang/protobuf v1.4.3/go.mod h1:oDoupMAO8OvCJWAcko0GGGIgR6R6ocIYbsSw735rRwI=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
 github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
