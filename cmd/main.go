@@ -53,6 +53,9 @@ type options struct {
 
 	TransmissionUrl   string
 	TransmissionToken string
+
+	List string
+	Skip int
 }
 
 func main() {
@@ -78,6 +81,9 @@ func main() {
 	flag.IntVar(&o.LoraUplinkCounter, "lora-uplink-counter", 0, "lora-uplink-counter")
 	flag.IntVar(&o.LoraDownlinkCounter, "lora-downlink-counter", 0, "lora-downlink-counter")
 	flag.StringVar(&o.Schedule, "schedule", "", "schedule")
+
+	flag.StringVar(&o.List, "ls", "", "path")
+	flag.IntVar(&o.Skip, "skip", 0, "skip")
 
 	flag.StringVar(&o.Wifi, "wifi", "", "wifi networks: ssid,password,ssid,password")
 
@@ -153,6 +159,13 @@ func main() {
 
 	if o.ScanModules {
 		_, err := device.QueryScanModules()
+		if err != nil {
+			log.Fatalf("Error: %v", err)
+		}
+	}
+
+	if len(o.List) != 0 {
+		_, err := device.QueryListing(o.List, uint32(o.Skip))
 		if err != nil {
 			log.Fatalf("Error: %v", err)
 		}

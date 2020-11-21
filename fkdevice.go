@@ -255,6 +255,21 @@ func (d *DeviceClient) ConfigureLoraOtaa(appKey, appEui string) (*pb.HttpReply, 
 	return reply, nil
 }
 
+func (d *DeviceClient) QueryListing(path string, page uint32) (*pb.HttpReply, error) {
+	query := &pb.HttpQuery{
+		Type: pb.QueryType_QUERY_FILES,
+		Directory: &pb.ListDirectory{
+			Path: path,
+			Page: page,
+		},
+	}
+	reply, err := d.queryDevice(query)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
 func (d *DeviceClient) QueryGetReadings() (*pb.HttpReply, error) {
 	reply, err := d.queryDeviceSimple(pb.QueryType_QUERY_GET_READINGS)
 	if err != nil {
