@@ -3,7 +3,7 @@ module github.com/fieldkit/fkc
 go 1.14
 
 require (
-	github.com/fieldkit/app-protocol v0.0.0-20201121193500-04fc6e24147a
+	github.com/fieldkit/app-protocol v0.0.0-20201122021137-6c9acb4a7c2f
 	github.com/fieldkit/atlas-protocol v0.0.0-20200303170218-9db763fe5163 // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
