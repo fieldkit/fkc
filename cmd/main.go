@@ -14,8 +14,8 @@ import (
 
 	fkc "github.com/fieldkit/fkc"
 
-	pb "github.com/fieldkit/app-protocol"
-	atlaspb "github.com/fieldkit/atlas-protocol"
+	pbapp "github.com/fieldkit/app-protocol"
+	pbdata "github.com/fieldkit/data-protocol"
 )
 
 type options struct {
@@ -44,13 +44,9 @@ type options struct {
 	LoraUplinkCounter     int
 	LoraDownlinkCounter   int
 
-	Module int
-
-	Atlas          string
-	AtlasClear     bool
-	AtlasStatus    bool
-	AtlasCalibrate int
-	AtlasValue     float64
+	Module          int
+	ResetModule     int
+	ConfigureModule int
 
 	FactoryReset bool
 
@@ -65,7 +61,7 @@ type options struct {
 
 func decode() error {
 	unmarshalFunc := message.UnmarshalFunc(func(b []byte) (proto.Message, error) {
-		var reply pb.HttpReply
+		var reply pbapp.HttpReply
 		err := proto.Unmarshal(b, &reply)
 		if err != nil {
 			return nil, err
@@ -117,11 +113,8 @@ func main() {
 	flag.StringVar(&o.Wifi, "wifi", "", "wifi networks: ssid,password,ssid,password")
 
 	flag.IntVar(&o.Module, "module", -1, "module")
-	flag.StringVar(&o.Atlas, "atlas", "", "atlas")
-	flag.BoolVar(&o.AtlasClear, "atlas-clear", false, "atlas-clear")
-	flag.BoolVar(&o.AtlasStatus, "atlas-status", false, "atlas-status")
-	flag.IntVar(&o.AtlasCalibrate, "atlas-calibrate", 0, "atlas-calibrate")
-	flag.Float64Var(&o.AtlasValue, "atlas-value", 0, "atlas-value")
+	flag.IntVar(&o.ConfigureModule, "configure-module", -1, "configure module")
+	flag.IntVar(&o.ResetModule, "reset-module", -1, "reset module")
 
 	flag.StringVar(&o.TransmissionUrl, "transmission-url", "", "transmission url")
 	flag.StringVar(&o.TransmissionToken, "transmission-token", "", "transmission token")
@@ -258,35 +251,6 @@ func main() {
 		}
 	}
 
-	if o.Atlas != "" {
-		if o.Module < 0 {
-			log.Fatalf("Error: module required")
-		}
-
-		query := &atlaspb.WireAtlasQuery{}
-		rawQuery, err := proto.Marshal(query)
-		if err != nil {
-			panic(err)
-		}
-
-		rawReply, err := device.ModuleQuery(uint32(o.Module), rawQuery)
-		if err != nil {
-			panic(err)
-		}
-
-		log.Printf("%v", rawReply)
-
-		buffer := proto.NewBuffer(rawReply)
-
-		var reply atlaspb.WireAtlasReply
-		err = buffer.DecodeMessage(&reply)
-		if err != nil {
-			panic(err)
-		}
-
-		log.Printf("%v", reply)
-	}
-
 	if o.TransmissionUrl != "" || o.TransmissionToken != "" {
 		_, err := device.ConfigureTransmission(o.TransmissionUrl, o.TransmissionToken)
 		if err != nil {
@@ -294,68 +258,37 @@ func main() {
 		}
 	}
 
+	if o.ConfigureModule >= 0 {
+		err := configureModule(device, uint32(o.ConfigureModule), 1, 0)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if o.ResetModule >= 0 {
+		err := resetModule(device, uint32(o.ResetModule))
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	if o.Module >= 0 {
-		if o.AtlasStatus {
-			query := &atlaspb.WireAtlasQuery{
-				Type: atlaspb.QueryType_QUERY_NONE,
-				Calibration: &atlaspb.AtlasCalibrationCommand{
-					Operation: atlaspb.CalibrationOperation_CALIBRATION_STATUS,
-				},
-			}
-
-			reply, err := atlasQuery(device, uint32(o.Module), query)
-			if err != nil {
-				panic(err)
-			}
-
-			log.Printf("reply: %+v", reply)
-		}
-
-		if o.AtlasClear {
-			query := &atlaspb.WireAtlasQuery{
-				Type: atlaspb.QueryType_QUERY_NONE,
-				Calibration: &atlaspb.AtlasCalibrationCommand{
-					Operation: atlaspb.CalibrationOperation_CALIBRATION_CLEAR,
-				},
-			}
-
-			reply, err := atlasQuery(device, uint32(o.Module), query)
-			if err != nil {
-				panic(err)
-			}
-
-			log.Printf("reply: %+v", reply)
-		}
-
-		if o.AtlasCalibrate > 0 {
-			query := &atlaspb.WireAtlasQuery{
-				Type: atlaspb.QueryType_QUERY_NONE,
-				Calibration: &atlaspb.AtlasCalibrationCommand{
-					Operation: atlaspb.CalibrationOperation_CALIBRATION_SET,
-					Which:     uint32(o.AtlasCalibrate),
-					Value:     float32(o.AtlasValue),
-				},
-			}
-
-			reply, err := atlasQuery(device, uint32(o.Module), query)
-			if err != nil {
-				panic(err)
-			}
-
-			log.Printf("reply: %+v", reply)
+		err := queryModuleStatus(device, uint32(o.Module))
+		if err != nil {
+			panic(err)
 		}
 	}
 }
 
-func buildNetworks(wifi string) []*pb.NetworkInfo {
-	networks := make([]*pb.NetworkInfo, 0)
+func buildNetworks(wifi string) []*pbapp.NetworkInfo {
+	networks := make([]*pbapp.NetworkInfo, 0)
 	parts := strings.Split(wifi, ",")
 	if len(parts)%2 != 0 {
 		return networks
 	}
 
 	for i := 0; i < len(parts); {
-		networks = append(networks, &pb.NetworkInfo{
+		networks = append(networks, &pbapp.NetworkInfo{
 			Ssid:     parts[i],
 			Password: parts[i+1],
 		})
@@ -365,28 +298,118 @@ func buildNetworks(wifi string) []*pb.NetworkInfo {
 	return networks
 }
 
-func atlasQuery(device *fkc.DeviceClient, module uint32, query *atlaspb.WireAtlasQuery) (reply *atlaspb.WireAtlasReply, err error) {
-	rawQuery, err := proto.Marshal(query)
-	if err != nil {
-		return nil, err
+func queryModuleStatus(device *fkc.DeviceClient, module uint32) (err error) {
+	moduleQuery := &pbapp.ModuleHttpQuery{
+		Type: pbapp.ModuleQueryType_MODULE_QUERY_STATUS,
 	}
 
-	log.Printf("query: %v", rawQuery)
+	log.Printf("query: %v", moduleQuery)
+
+	rawQuery, err := proto.Marshal(moduleQuery)
+	if err != nil {
+		return err
+	}
 
 	rawReply, err := device.ModuleQuery(module, rawQuery)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	log.Printf("reply: %v", rawReply)
 
-	reply = &atlaspb.WireAtlasReply{}
+	reply := &pbapp.ModuleHttpReply{}
 	buffer := proto.NewBuffer(rawReply)
 
 	err = buffer.DecodeMessage(reply)
 	if err != nil {
-		return nil, err
+		return err
 	}
+
+	log.Printf("reply: %v", reply)
+
+	return nil
+}
+
+func configureModule(device *fkc.DeviceClient, module uint32, m, b float32) (err error) {
+	calibration := &pbdata.ModuleConfiguration{
+		Calibration: &pbdata.Calibration{
+			Type:         pbdata.CurveType_CURVE_LINEAR,
+			Time:         0,
+			Points:       []*pbdata.CalibrationPoint{},
+			Coefficients: &pbdata.CalibrationCoefficients{},
+		},
+	}
+
+	configurationData, err := proto.Marshal(calibration)
+	if err != nil {
+		return err
+	}
+
+	configurationDelimited := proto.NewBuffer(make([]byte, 0))
+	configurationDelimited.EncodeRawBytes(configurationData)
+
+	log.Printf("configuration: %v", configurationDelimited.Bytes())
+
+	moduleQuery := &pbapp.ModuleHttpQuery{
+		Type:          pbapp.ModuleQueryType_MODULE_QUERY_CONFIGURE,
+		Configuration: configurationDelimited.Bytes(),
+	}
+
+	log.Printf("query: %v", moduleQuery)
+
+	rawQuery, err := proto.Marshal(moduleQuery)
+	if err != nil {
+		return err
+	}
+
+	rawReply, err := device.ModuleQuery(module, rawQuery)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("reply: %v", rawReply)
+
+	reply := &pbapp.ModuleHttpReply{}
+	buffer := proto.NewBuffer(rawReply)
+
+	err = buffer.DecodeMessage(reply)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("reply: %v", reply)
+
+	return
+}
+
+func resetModule(device *fkc.DeviceClient, module uint32) (err error) {
+	moduleQuery := &pbapp.ModuleHttpQuery{
+		Type: pbapp.ModuleQueryType_MODULE_QUERY_RESET,
+	}
+
+	log.Printf("query: %v", moduleQuery)
+
+	rawQuery, err := proto.Marshal(moduleQuery)
+	if err != nil {
+		return err
+	}
+
+	rawReply, err := device.ModuleQuery(module, rawQuery)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("reply: %v", rawReply)
+
+	reply := &pbapp.ModuleHttpReply{}
+	buffer := proto.NewBuffer(rawReply)
+
+	err = buffer.DecodeMessage(reply)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("reply: %v", reply)
 
 	return
 }

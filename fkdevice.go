@@ -257,7 +257,7 @@ func (d *DeviceClient) ConfigureLoraOtaa(appKey, appEui string) (*pb.HttpReply, 
 
 func (d *DeviceClient) QueryListing(path string, page uint32) (*pb.HttpReply, error) {
 	query := &pb.HttpQuery{
-		Type: pb.QueryType_QUERY_FILES,
+		Type: pb.QueryType_QUERY_FILES_SD,
 		Directory: &pb.ListDirectory{
 			Path: path,
 			Page: page,
@@ -377,7 +377,6 @@ func (d *DeviceClient) queryDeviceCallback(opts *DeviceQueryOpts) (collection.Me
 	}
 
 	unmarshalFunc := message.UnmarshalFunc(func(b []byte) (proto.Message, error) {
-
 		fmt.Printf("%v\n", b)
 
 		var reply pb.HttpReply
@@ -433,5 +432,5 @@ func (d *DeviceClient) queryModuleCallback(opts *DeviceQueryOpts) ([]byte, error
 }
 
 func (d *DeviceClient) queryModule(module uint32, query []byte) (rawReply []byte, err error) {
-	return d.queryModuleCallback(&DeviceQueryOpts{fmt.Sprintf("fk/v1/module/%d", module), query, DefaultTimeout})
+	return d.queryModuleCallback(&DeviceQueryOpts{fmt.Sprintf("fk/v1/modules/%d", module), query, DefaultTimeout})
 }
