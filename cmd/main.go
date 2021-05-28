@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
 	"os"
@@ -8,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/robinpowered/go-proto/message"
+	"github.com/robinpowered/go-proto/stream"
 
 	fkc "github.com/fieldkit/fkc"
 
@@ -56,6 +59,32 @@ type options struct {
 
 	List string
 	Skip int
+
+	Decode bool
+}
+
+func decode() error {
+	unmarshalFunc := message.UnmarshalFunc(func(b []byte) (proto.Message, error) {
+		var reply pb.HttpReply
+		err := proto.Unmarshal(b, &reply)
+		if err != nil {
+			return nil, err
+		}
+
+		replyJson, err := json.MarshalIndent(reply, "", "  ")
+		if err == nil {
+			log.Printf("%s", replyJson)
+		}
+
+		return &reply, nil
+	})
+
+	_, err := stream.ReadLengthPrefixedCollection(os.Stdin, unmarshalFunc)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func main() {
@@ -98,8 +127,16 @@ func main() {
 	flag.StringVar(&o.TransmissionToken, "transmission-token", "", "transmission token")
 
 	flag.BoolVar(&o.FactoryReset, "factory-reset", false, "factory reset")
+	flag.BoolVar(&o.Decode, "decode", false, "decode fk related data")
 
 	flag.Parse()
+
+	if o.Decode {
+		if err := decode(); err != nil {
+			log.Fatalf("Error: %v", err)
+		}
+		return
+	}
 
 	if o.Address == "" {
 		flag.Usage()
