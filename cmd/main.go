@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -9,8 +9,6 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/robinpowered/go-proto/message"
-	"github.com/robinpowered/go-proto/stream"
 
 	fkc "github.com/fieldkit/fkc"
 
@@ -56,31 +54,8 @@ type options struct {
 	List string
 	Skip int
 
-	Decode bool
-}
-
-func decode() error {
-	unmarshalFunc := message.UnmarshalFunc(func(b []byte) (proto.Message, error) {
-		var reply pbapp.HttpReply
-		err := proto.Unmarshal(b, &reply)
-		if err != nil {
-			return nil, err
-		}
-
-		replyJson, err := json.MarshalIndent(reply, "", "  ")
-		if err == nil {
-			log.Printf("%s", replyJson)
-		}
-
-		return &reply, nil
-	})
-
-	_, err := stream.ReadLengthPrefixedCollection(os.Stdin, unmarshalFunc)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	DecodeApp  bool
+	DecodeData bool
 }
 
 func main() {
@@ -120,13 +95,23 @@ func main() {
 	flag.StringVar(&o.TransmissionToken, "transmission-token", "", "transmission token")
 
 	flag.BoolVar(&o.FactoryReset, "factory-reset", false, "factory reset")
-	flag.BoolVar(&o.Decode, "decode", false, "decode fk related data")
+	flag.BoolVar(&o.DecodeApp, "decode-app", false, "decode fk app communications")
+	flag.BoolVar(&o.DecodeData, "decode-data", false, "decode fk data")
 
 	flag.Parse()
 
-	if o.Decode {
-		if err := decode(); err != nil {
-			log.Fatalf("Error: %v", err)
+	ctx := context.Background()
+
+	if o.DecodeApp {
+		if err := fkc.Decode(ctx, fkc.DecodeApp); err != nil {
+			log.Fatalf("error: %v", err)
+		}
+		return
+	}
+
+	if o.DecodeData {
+		if err := fkc.Decode(ctx, fkc.DecodeData); err != nil {
+			log.Fatalf("error: %v", err)
 		}
 		return
 	}
@@ -148,77 +133,77 @@ func main() {
 	if o.Status {
 		_, err := device.QueryStatus()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.Name != "" {
 		_, err := device.ConfigureName(o.Name)
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.GetReadings {
 		_, err := device.QueryGetReadings()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.TakeReadings {
 		_, err := device.QueryTakeReadings()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.StartRecording {
 		_, err := device.QueryStartRecording()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.StopRecording {
 		_, err := device.QueryStopRecording()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.ScanModules {
 		_, err := device.QueryScanModules()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if len(o.List) != 0 {
 		_, err := device.QueryListing(o.List, uint32(o.Skip))
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.ScanNetworks {
 		_, err := device.QueryScanNetworks()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.LoraAppKey != "" && o.LoraAppEui != "" {
 		_, err := device.ConfigureLoraOtaa(o.LoraAppKey, o.LoraAppEui)
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.LoraAppSessionKey != "" && o.LoraNetworkSessionKey != "" && o.LoraDeviceAddress != "" {
 		_, err := device.ConfigureLoraAbp(o.LoraAppSessionKey, o.LoraNetworkSessionKey, o.LoraDeviceAddress, uint32(o.LoraUplinkCounter), uint32(o.LoraDownlinkCounter))
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
@@ -231,7 +216,7 @@ func main() {
 			lora, _ := strconv.Atoi(f[3])
 			_, err := device.ConfigureSchedule(uint32(readings), uint32(network), uint32(gps), uint32(lora))
 			if err != nil {
-				log.Fatalf("Error: %v", err)
+				log.Fatalf("error: %v", err)
 			}
 		}
 	}
@@ -240,21 +225,21 @@ func main() {
 		networks := buildNetworks(o.Wifi)
 		_, err := device.ConfigureWifiNetworks(networks)
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.FactoryReset {
 		_, err := device.FactoryReset()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.TransmissionUrl != "" || o.TransmissionToken != "" {
 		_, err := device.ConfigureTransmission(o.TransmissionUrl, o.TransmissionToken)
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			log.Fatalf("error: %v", err)
 		}
 	}
 
