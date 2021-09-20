@@ -202,7 +202,7 @@ func (d *DeviceClient) ClearLora() (*pb.HttpReply, error) {
 	return reply, nil
 }
 
-func (d *DeviceClient) ConfigureLoraAbp(appSessionKey, networkSessionKey, deviceAddress string, uplinkCounter, downlinkCounter uint32) (*pb.HttpReply, error) {
+func (d *DeviceClient) ConfigureLoraAbp(appSessionKey, networkSessionKey, deviceAddress string, uplinkCounter, downlinkCounter, frequencyBand uint32) (*pb.HttpReply, error) {
 	appSessionKeyBytes, err := hex.DecodeString(appSessionKey)
 	if err != nil {
 		return nil, err
@@ -226,6 +226,7 @@ func (d *DeviceClient) ConfigureLoraAbp(appSessionKey, networkSessionKey, device
 		Type: pb.QueryType_QUERY_CONFIGURE,
 		LoraSettings: &pb.LoraSettings{
 			Modifying:         true,
+			FrequencyBand:     uint32(frequencyBand),
 			AppSessionKey:     appSessionKeyBytes,
 			NetworkSessionKey: networkSessionKeyBytes,
 			DeviceAddress:     deviceAddressBytes,
@@ -240,7 +241,7 @@ func (d *DeviceClient) ConfigureLoraAbp(appSessionKey, networkSessionKey, device
 	return reply, nil
 }
 
-func (d *DeviceClient) ConfigureLoraOtaa(deviceEui, appKey, joinEui string) (*pb.HttpReply, error) {
+func (d *DeviceClient) ConfigureLoraOtaa(deviceEui, appKey, joinEui string, frequencyBand int) (*pb.HttpReply, error) {
 	deviceEuiBytes, err := hex.DecodeString(deviceEui)
 	if err != nil {
 		return nil, err
@@ -257,16 +258,17 @@ func (d *DeviceClient) ConfigureLoraOtaa(deviceEui, appKey, joinEui string) (*pb
 	}
 
 	log.Printf("Device EUI +%v", deviceEuiBytes)
-	log.Printf("EUI %+v", joinEuiBytes)
 	log.Printf("KEY %+v", appKeyBytes)
+	log.Printf("EUI %+v", joinEuiBytes)
 
 	query := &pb.HttpQuery{
 		Type: pb.QueryType_QUERY_CONFIGURE,
 		LoraSettings: &pb.LoraSettings{
-			Modifying: true,
-			DeviceEui: deviceEuiBytes,
-			AppKey:    appKeyBytes,
-			JoinEui:   joinEuiBytes,
+			Modifying:     true,
+			FrequencyBand: uint32(frequencyBand),
+			DeviceEui:     deviceEuiBytes,
+			AppKey:        appKeyBytes,
+			JoinEui:       joinEuiBytes,
 		},
 	}
 	reply, err := d.queryDevice(query)

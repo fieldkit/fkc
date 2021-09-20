@@ -43,6 +43,7 @@ type options struct {
 	LoraDeviceAddress     string
 	LoraUplinkCounter     int
 	LoraDownlinkCounter   int
+	LoraFrequencyBand     int
 
 	Module          int
 	ResetModule     int
@@ -85,6 +86,7 @@ func main() {
 	flag.StringVar(&o.LoraDeviceAddress, "lora-device-address", "", "lora-device-address")
 	flag.IntVar(&o.LoraUplinkCounter, "lora-uplink-counter", 0, "lora-uplink-counter")
 	flag.IntVar(&o.LoraDownlinkCounter, "lora-downlink-counter", 0, "lora-downlink-counter")
+	flag.IntVar(&o.LoraFrequencyBand, "lora-freq-band", 915, "lora band")
 	flag.StringVar(&o.Schedule, "schedule", "", "schedule")
 
 	flag.StringVar(&o.List, "ls", "", "path")
@@ -206,14 +208,15 @@ func main() {
 	}
 
 	if o.LoraDeviceEui != "" && o.LoraAppKey != "" && o.LoraJoinEui != "" {
-		_, err := device.ConfigureLoraOtaa(o.LoraDeviceEui, o.LoraAppKey, o.LoraJoinEui)
+		_, err := device.ConfigureLoraOtaa(o.LoraDeviceEui, o.LoraAppKey, o.LoraJoinEui, o.LoraFrequencyBand)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
 	}
 
 	if o.LoraAppSessionKey != "" && o.LoraNetworkSessionKey != "" && o.LoraDeviceAddress != "" {
-		_, err := device.ConfigureLoraAbp(o.LoraAppSessionKey, o.LoraNetworkSessionKey, o.LoraDeviceAddress, uint32(o.LoraUplinkCounter), uint32(o.LoraDownlinkCounter))
+		_, err := device.ConfigureLoraAbp(o.LoraAppSessionKey, o.LoraNetworkSessionKey, o.LoraDeviceAddress,
+			uint32(o.LoraUplinkCounter), uint32(o.LoraDownlinkCounter), uint32(o.LoraFrequencyBand))
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
