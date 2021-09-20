@@ -188,6 +188,20 @@ func (d *DeviceClient) ConfigureTransmission(url, token string) (*pb.HttpReply, 
 	return reply, nil
 }
 
+func (d *DeviceClient) ClearLora() (*pb.HttpReply, error) {
+	query := &pb.HttpQuery{
+		Type: pb.QueryType_QUERY_CONFIGURE,
+		LoraSettings: &pb.LoraSettings{
+			Clearing: true,
+		},
+	}
+	reply, err := d.queryDevice(query)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
 func (d *DeviceClient) ConfigureLoraAbp(appSessionKey, networkSessionKey, deviceAddress string, uplinkCounter, downlinkCounter uint32) (*pb.HttpReply, error) {
 	appSessionKeyBytes, err := hex.DecodeString(appSessionKey)
 	if err != nil {
@@ -215,8 +229,8 @@ func (d *DeviceClient) ConfigureLoraAbp(appSessionKey, networkSessionKey, device
 			AppSessionKey:     appSessionKeyBytes,
 			NetworkSessionKey: networkSessionKeyBytes,
 			DeviceAddress:     deviceAddressBytes,
-			UplinkCounter:     uplinkCounter,
-			DownlinkCounter:   downlinkCounter,
+			// UplinkCounter:     uplinkCounter,
+			// DownlinkCounter:   downlinkCounter,
 		},
 	}
 	reply, err := d.queryDevice(query)
@@ -226,26 +240,33 @@ func (d *DeviceClient) ConfigureLoraAbp(appSessionKey, networkSessionKey, device
 	return reply, nil
 }
 
-func (d *DeviceClient) ConfigureLoraOtaa(appKey, appEui string) (*pb.HttpReply, error) {
+func (d *DeviceClient) ConfigureLoraOtaa(deviceEui, appKey, joinEui string) (*pb.HttpReply, error) {
+	deviceEuiBytes, err := hex.DecodeString(deviceEui)
+	if err != nil {
+		return nil, err
+	}
+
 	appKeyBytes, err := hex.DecodeString(appKey)
 	if err != nil {
 		return nil, err
 	}
 
-	appEuiBytes, err := hex.DecodeString(appEui)
+	joinEuiBytes, err := hex.DecodeString(joinEui)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Printf("EUI %+v", appEuiBytes)
+	log.Printf("Device EUI +%v", deviceEuiBytes)
+	log.Printf("EUI %+v", joinEuiBytes)
 	log.Printf("KEY %+v", appKeyBytes)
 
 	query := &pb.HttpQuery{
 		Type: pb.QueryType_QUERY_CONFIGURE,
 		LoraSettings: &pb.LoraSettings{
 			Modifying: true,
+			DeviceEui: deviceEuiBytes,
 			AppKey:    appKeyBytes,
-			AppEui:    appEuiBytes,
+			JoinEui:   joinEuiBytes,
 		},
 	}
 	reply, err := d.queryDevice(query)

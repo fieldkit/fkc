@@ -34,8 +34,10 @@ type options struct {
 	Schedule string
 	Wifi     string
 
+	LoraClear             bool
+	LoraDeviceEui         string
 	LoraAppKey            string
-	LoraAppEui            string
+	LoraJoinEui           string
 	LoraAppSessionKey     string
 	LoraNetworkSessionKey string
 	LoraDeviceAddress     string
@@ -73,8 +75,11 @@ func main() {
 	flag.BoolVar(&o.ScanNetworks, "scan-networks", false, "")
 	flag.BoolVar(&o.ScanModules, "scan-modules", false, "")
 	flag.StringVar(&o.Save, "save", "", "save")
+
+	flag.BoolVar(&o.LoraClear, "lora-clear", false, "lora-clear")
+	flag.StringVar(&o.LoraDeviceEui, "lora-device-eui", "", "lora-device-eui")
 	flag.StringVar(&o.LoraAppKey, "lora-app-key", "", "lora-app-key")
-	flag.StringVar(&o.LoraAppEui, "lora-app-eui", "", "lora-app-eui")
+	flag.StringVar(&o.LoraJoinEui, "lora-join-eui", "", "lora-join-eui")
 	flag.StringVar(&o.LoraAppSessionKey, "lora-app-session-key", "", "lora-app-session-key")
 	flag.StringVar(&o.LoraNetworkSessionKey, "lora-network-session-key", "", "lora-network-session-key")
 	flag.StringVar(&o.LoraDeviceAddress, "lora-device-address", "", "lora-device-address")
@@ -193,8 +198,15 @@ func main() {
 		}
 	}
 
-	if o.LoraAppKey != "" && o.LoraAppEui != "" {
-		_, err := device.ConfigureLoraOtaa(o.LoraAppKey, o.LoraAppEui)
+	if o.LoraClear {
+		_, err := device.ClearLora()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+	}
+
+	if o.LoraDeviceEui != "" && o.LoraAppKey != "" && o.LoraJoinEui != "" {
+		_, err := device.ConfigureLoraOtaa(o.LoraDeviceEui, o.LoraAppKey, o.LoraJoinEui)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}

@@ -14,4 +14,7 @@ $(BUILD)/$(BINARY): cmd/*.go *.go
 clean:
 	rm -rf $(BUILD)
 
+rebuild:
+	go get github.com/fieldkit/app-protocol
+
 .PHONY: all clean

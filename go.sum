@@ -60,6 +60,8 @@ github.com/fieldkit/app-protocol v0.0.0-20210528230858-7bfa7ff71fc5 h1:myxqNIzLZ
 github.com/fieldkit/app-protocol v0.0.0-20210528230858-7bfa7ff71fc5/go.mod h1:QVcnK7kSKAzcX2U6kYouPuunH7lQY75uStj1VxCWwSw=
 github.com/fieldkit/app-protocol v0.0.0-20210914181453-3c7ec93cd68e h1:ldWUBzEOo2sDI8nfCjm1QkB9X7KMcwyWR5MccIHuqqs=
 github.com/fieldkit/app-protocol v0.0.0-20210914181453-3c7ec93cd68e/go.mod h1:Movb3BuVIwjFvjDMJqC84qti3WTOd9zVF7Fa/5wGdMI=
+github.com/fieldkit/app-protocol v0.0.0-20210920203157-725fd8c468ef h1:n3Ur1ByzYcSNQmeNZ484zrERWFhe/IxKvabC9/XFPzg=
+github.com/fieldkit/app-protocol v0.0.0-20210920203157-725fd8c468ef/go.mod h1:Movb3BuVIwjFvjDMJqC84qti3WTOd9zVF7Fa/5wGdMI=
 github.com/fieldkit/atlas-protocol v0.0.0-20200205183448-29cdb99f6423/go.mod h1:Q/2y8dvxA64Ni4AHv96Tqn/qwtZZXU2LBXuJ9ZlqCxs=
 github.com/fieldkit/atlas-protocol v0.0.0-20200303170218-9db763fe5163 h1:yyXFdy0Nn507lyD1WH+ydfuErkrTGydRRPiqXmw2NHs=
 github.com/fieldkit/atlas-protocol v0.0.0-20200303170218-9db763fe5163/go.mod h1:Q/2y8dvxA64Ni4AHv96Tqn/qwtZZXU2LBXuJ9ZlqCxs=
