@@ -333,10 +333,25 @@ func queryModuleStatus(device *fkc.DeviceClient, module uint32) (err error) {
 func configureModule(device *fkc.DeviceClient, module uint32, m, b float32) (err error) {
 	calibration := &pbdata.ModuleConfiguration{
 		Calibration: &pbdata.Calibration{
-			Type:         pbdata.CurveType_CURVE_LINEAR,
-			Time:         0,
-			Points:       []*pbdata.CalibrationPoint{},
-			Coefficients: &pbdata.CalibrationCoefficients{},
+			Type: pbdata.CurveType_CURVE_LINEAR,
+			Time: 0,
+			Points: []*pbdata.CalibrationPoint{
+				&pbdata.CalibrationPoint{
+					References:   []float32{1},
+					Uncalibrated: []float32{1},
+				},
+				&pbdata.CalibrationPoint{
+					References:   []float32{1},
+					Uncalibrated: []float32{2},
+				},
+				&pbdata.CalibrationPoint{
+					References:   []float32{1},
+					Uncalibrated: []float32{3},
+				},
+			},
+			Coefficients: &pbdata.CalibrationCoefficients{
+				Values: []float32{0.0, 1.0},
+			},
 		},
 	}
 
