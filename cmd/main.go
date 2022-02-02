@@ -339,14 +339,17 @@ func configureModule(device *fkc.DeviceClient, module uint32, m, b float32) (err
 				&pbdata.CalibrationPoint{
 					References:   []float32{1},
 					Uncalibrated: []float32{1},
+					Factory:      []float32{1},
 				},
 				&pbdata.CalibrationPoint{
-					References:   []float32{1},
+					References:   []float32{2},
 					Uncalibrated: []float32{2},
+					Factory:      []float32{2},
 				},
 				&pbdata.CalibrationPoint{
-					References:   []float32{1},
+					References:   []float32{3},
 					Uncalibrated: []float32{3},
+					Factory:      []float32{3},
 				},
 			},
 			Coefficients: &pbdata.CalibrationCoefficients{
