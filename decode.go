@@ -31,6 +31,21 @@ func DecodeApp(ctx context.Context, b []byte) error {
 	return nil
 }
 
+func DecodeModuleConfig(ctx context.Context, b []byte) error {
+	var reply pbdata.ModuleConfiguration
+	err := proto.Unmarshal(b, &reply)
+	if err != nil {
+		return err
+	}
+
+	replyJson, err := json.MarshalIndent(reply, "", "  ")
+	if err == nil {
+		log.Printf("%s", replyJson)
+	}
+
+	return nil
+}
+
 func DecodeData(ctx context.Context, b []byte) error {
 	var reply pbdata.DataRecord
 	err := proto.Unmarshal(b, &reply)

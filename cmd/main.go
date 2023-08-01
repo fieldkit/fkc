@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -57,8 +59,10 @@ type options struct {
 	List string
 	Skip int
 
-	DecodeApp  bool
-	DecodeData bool
+	DecodeApp          bool
+	DecodeData         bool
+	DecodeModuleConfig bool
+	Varint             int
 }
 
 func main() {
@@ -98,19 +102,35 @@ func main() {
 	flag.IntVar(&o.ConfigureModule, "configure-module", -1, "configure module")
 	flag.IntVar(&o.ResetModule, "reset-module", -1, "reset module")
 
+	flag.IntVar(&o.Varint, "varint", 0, "show varint hex")
+
 	flag.StringVar(&o.TransmissionUrl, "transmission-url", "", "transmission url")
 	flag.StringVar(&o.TransmissionToken, "transmission-token", "", "transmission token")
 
 	flag.BoolVar(&o.FactoryReset, "factory-reset", false, "factory reset")
 	flag.BoolVar(&o.DecodeApp, "decode-app", false, "decode fk app communications")
 	flag.BoolVar(&o.DecodeData, "decode-data", false, "decode fk data")
+	flag.BoolVar(&o.DecodeModuleConfig, "decode-module-config", false, "decode fk module config")
 
 	flag.Parse()
 
 	ctx := context.Background()
 
+	if o.Varint != 0 {
+		bytes := proto.EncodeVarint(uint64(o.Varint))
+		fmt.Printf("%v\n", hex.EncodeToString(bytes))
+		return
+	}
+
 	if o.DecodeApp {
 		if err := fkc.Decode(ctx, fkc.DecodeApp); err != nil {
+			log.Fatalf("error: %v", err)
+		}
+		return
+	}
+
+	if o.DecodeModuleConfig {
+		if err := fkc.Decode(ctx, fkc.DecodeModuleConfig); err != nil {
 			log.Fatalf("error: %v", err)
 		}
 		return
